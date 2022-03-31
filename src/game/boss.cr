@@ -1,0 +1,2 @@
+class Boss < Enemy
+end
