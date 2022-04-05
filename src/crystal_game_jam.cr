@@ -108,25 +108,28 @@ while window.open?
       window.close
     elsif event.is_a? SF::Event::KeyPressed
       if SF::Keyboard.key_pressed?(SF::Keyboard::Key::W)
-        player_movement += Up if player_movement.y == 0
+        player_movement += Up if player_movement.y >= 0
       end
       if SF::Keyboard.key_pressed?(SF::Keyboard::Key::S)
-        player_movement += Down if player_movement.y == 0
+        player_movement += Down if player_movement.y <= 0
       end
       if SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
-        player_movement += Left if player_movement.x == 0
+        player_movement += Left if player_movement.x >= 0
       end
       if SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
-        player_movement += Right if player_movement.x == 0
+        player_movement += Right if player_movement.x <= 0
       end
-    elsif SF::Mouse.button_pressed? SF::Mouse::Left
+    end
+    if SF::Mouse.button_pressed? SF::Mouse::Left
       if current_time > next_projectile_time
         projectiles << Projectile.new player.position, player.position - SF::Mouse.get_position(window)
         next_projectile_time = current_time + projectile_delay
       end
-    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S))
+    end
+    if !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S))
       player_movement.y = 0
-    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
+    end
+    if !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
       player_movement.x = 0
     end
   end
