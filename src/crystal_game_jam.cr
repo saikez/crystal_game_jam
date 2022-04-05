@@ -22,6 +22,21 @@ class WorldClock
   end
 end
 
+Up         = SF.vector2 0, -10
+Down       = SF.vector2 0, 10
+Left       = SF.vector2 -10, 0
+Right      = SF.vector2 10, 0
+UpLeft     = SF.vector2 -5, -5
+UpRight    = SF.vector2 5, -5
+DownLeft   = SF.vector2 -5, 5
+DownRight  = SF.vector2 5, 5
+Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
+
+# music = SF::Music.from_file("src/assets/sounds/music/Tragique.ogg")
+
+# music.volume = 50 # reduce the volume
+# music.loop = true # make it loop
+
 video_mode = SF::VideoMode.new 800, 600
 window = SF::RenderWindow.new video_mode, "Visk's End of the World Adventure"
 # window.vertical_sync_enabled = true
@@ -47,7 +62,13 @@ fps_text.position = SF.vector2 0, 20
 
 actors = [] of Actor
 # player = Player.new "Visk", SF.vector2(400, 300)
-player = Actor.new SF.vector2(400, 300), SF.int_rect(128, 228, 16, 28)
+player = Player.new SF.vector2(400, 300), SF.int_rect(128, 228, 16, 28)
+
+player_movement = SF.vector2 0, 0
+
+# Music doesn't want to play :c
+# This is more than likely a WSL issue... should work on desktop
+# music.play
 
 # Start Game Loop
 while window.open?
@@ -62,30 +83,31 @@ while window.open?
          (event.is_a?(SF::Event::KeyPressed) && event.code.escape?)
        )
       window.close
+      # Movement is a little funky atm.. gotta fix later
     elsif event.is_a? SF::Event::KeyPressed
-      case event.code
-      # Main Controle
-      when .w?
-        # Go Up
-      when .a?
-        # Go Left
-      when .s?
-        # Go Down
-      when .d?
-        # Go Right
-
-        # Alt Controls?
-      when .up?
-        # Go Up
-      when .left?
-        # Go Left
-      when .down?
-        # Go Down
-      when .right?
-        # Go Right
+      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
+        player_movement = UpLeft
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
+        player_movement = UpRight
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
+        player_movement = DownLeft
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
+        player_movement = DownRight
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::W)
+        player_movement = Up
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S)
+        player_movement = Down
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
+        player_movement = Left
+      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
+        player_movement = Right
       end
+    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
+      player_movement = SF.vector2 0, 0
     end
   end
+
+  player.move player_movement
 
   clock_text.string = current_time.to_s
   fps_text.string = (1000 / fps_clock.restart.as_milliseconds).to_s

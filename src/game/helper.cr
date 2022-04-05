@@ -1,4 +1,5 @@
 require "crsfml"
+require "crsfml/audio"
 
 require "./scene"
 require "./actor"
