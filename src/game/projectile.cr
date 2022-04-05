@@ -7,7 +7,7 @@ class Projectile
   @speed = 10
   @texture = SF::Texture.from_file "./src/assets/textures/Dungeon/0x72 Dungeon Individual Frames/Weapons/weapon_spear.png"
 
-  def initialize(@position : SF::Vector2f, @direction : SF::Vector2i)
+  def initialize(@position : SF::Vector2f, @direction : SF::Vector2f)
     @sprite = SF::Sprite.new @texture
     @sprite.origin = @sprite.local_bounds.center
     @sprite.scale SF.vector2 2, 2
@@ -26,13 +26,15 @@ class Projectile
   end
 
   def normalize_movement
-    unless @direction == SF.vector2f 0, 0
+    direction = SF.vector2f 0, 0
+
+    unless @direction == SF.vector2i 0, 0
       length = Math.sqrt(@direction.x ** 2 + @direction.y ** 2)
-      @direction.x /= length
-      @direction.y /= length
+      direction.x = -(@direction.x / length).to_f32
+      direction.y = -(@direction.y / length).to_f32
     end
 
-    @direction
+    direction
   end
 
   def apply_speed(direction)

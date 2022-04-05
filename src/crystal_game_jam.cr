@@ -160,7 +160,7 @@ while window.open?
     elsif SF::Mouse.button_pressed? SF::Mouse::Left
       if SF::Mouse.button_pressed? SF::Mouse::Left
         if current_time > next_projectile_time
-          projectiles << Projectile.new player.position, SF::Mouse.get_position(window)
+          projectiles << Projectile.new player.position, player.position - SF::Mouse.get_position(window)
           next_projectile_time = current_time + projectile_delay
         end
       end
@@ -191,7 +191,7 @@ while window.open?
 
   window.draw player
   enemies.each { |enemy| window.draw enemy }
-  prjectiles.each { |projectile| window.draw projectile }
+  projectiles.each { |projectile| window.draw projectile }
 
   window.display
 end
