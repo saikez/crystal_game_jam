@@ -26,11 +26,7 @@ Up         = SF.vector2f 0, -1
 Down       = SF.vector2f 0, 1
 Left       = SF.vector2f -1, 0
 Right      = SF.vector2f 1, 0
-UpLeft     = SF.vector2f -1, -1
-UpRight    = SF.vector2f 1, -1
-DownLeft   = SF.vector2f -1, 1
-DownRight  = SF.vector2f 1, 1
-Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
+Directions = [Left, Up, Right, Down]
 
 # music = SF::Music.from_file("src/assets/sounds/music/Tragique.ogg")
 
@@ -39,7 +35,6 @@ Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
 
 video_mode = SF::VideoMode.new 1200, 900
 window = SF::RenderWindow.new video_mode, "Visk's End of the World Adventure"
-# window.vertical_sync_enabled = true
 window.framerate_limit = 60
 
 font = SF::Font.from_file "src/assets/fonts/AncientModernTales.ttf"
@@ -49,7 +44,6 @@ title_text.font = font
 title_text.string = "Visk's End of the World Adventure"
 title_text.character_size = 48
 title_text.color = SF::Color::White
-# title_text.style = (SF::Text::Bold | SF::Text::Underlined)
 title_text.origin = title_text.local_bounds.center
 title_text.position = SF.vector2 video_mode.width / 2, video_mode.height / 2 + 100
 
@@ -59,10 +53,6 @@ clock_text = SF::Text.new "", font, 20
 fps_clock = SF::Clock.new
 fps_text = SF::Text.new "", font, 20
 fps_text.position = SF.vector2 0, 20
-# Debugging position
-#
-# position_text = SF::Text.new "", font, 20
-# position_text.position = SF.vector2 0, 40
 
 enemy_spawn_rate_increase_time = 20
 enemy_spawn_rate_time = 5
@@ -140,40 +130,32 @@ while window.open?
       window.close
       # Movement is a little funky atm.. gotta fix later
     elsif event.is_a? SF::Event::KeyPressed
-      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
-        player_movement = UpLeft
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
-        player_movement = UpRight
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
-        player_movement = DownLeft
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) && SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
-        player_movement = DownRight
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::W)
-        player_movement = Up
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::S)
-        player_movement = Down
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
-        player_movement = Left
-      elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
-        player_movement = Right
+      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::W)
+        player_movement += Up if player_movement.y == 0
+      end
+      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::S)
+        player_movement += Down if player_movement.y == 0
+      end
+      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::A)
+        player_movement += Left if player_movement.x == 0
+      end
+      if SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
+        player_movement += Right if player_movement.x == 0
       end
     elsif SF::Mouse.button_pressed? SF::Mouse::Left
-      if SF::Mouse.button_pressed? SF::Mouse::Left
-        if current_time > next_projectile_time
-          projectiles << Projectile.new player.position, player.position - SF::Mouse.get_position(window)
-          next_projectile_time = current_time + projectile_delay
-        end
+      if current_time > next_projectile_time
+        projectiles << Projectile.new player.position, player.position - SF::Mouse.get_position(window)
+        next_projectile_time = current_time + projectile_delay
       end
-    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
-      player_movement = SF.vector2f 0, 0
+    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S))
+      player_movement.y = 0
+    elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
+      player_movement.x = 0
     end
   end
 
   clock_text.string = current_time.to_s
   fps_text.string = (1000 / fps_clock.restart.as_milliseconds).to_s
-  # Debugging position
-  #
-  # position_text.string = player.get_position.to_s
 
   player.move player_movement
   enemies.each { |enemy| enemy.move player.position }
@@ -185,9 +167,6 @@ while window.open?
   window.draw clock_text
   window.draw fps_text
   window.draw title_text if current_time_seconds < 5
-  # Debugging position
-  #
-  # window.draw position_text
 
   window.draw player
   enemies.each { |enemy| window.draw enemy }
