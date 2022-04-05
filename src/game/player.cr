@@ -1,7 +1,4 @@
 class Player < Actor
-  def move(direction : SF::Vector2i)
-    @sprite.move direction
-  end
 end
 
 # class Player < Actor
