@@ -22,14 +22,14 @@ class WorldClock
   end
 end
 
-Up         = SF.vector2 0, -5
-Down       = SF.vector2 0, 5
-Left       = SF.vector2 -5, 0
-Right      = SF.vector2 5, 0
-UpLeft     = SF.vector2 -4, -4
-UpRight    = SF.vector2 4, -4
-DownLeft   = SF.vector2 -4, 4
-DownRight  = SF.vector2 4, 4
+Up         = SF.vector2f 0, -1
+Down       = SF.vector2f 0, 1
+Left       = SF.vector2f -1, 0
+Right      = SF.vector2f 1, 0
+UpLeft     = SF.vector2f -1, -1
+UpRight    = SF.vector2f 1, -1
+DownLeft   = SF.vector2f -1, 1
+DownRight  = SF.vector2f 1, 1
 Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
 
 # music = SF::Music.from_file("src/assets/sounds/music/Tragique.ogg")
@@ -37,7 +37,7 @@ Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
 # music.volume = 50 # reduce the volume
 # music.loop = true # make it loop
 
-video_mode = SF::VideoMode.new 800, 600
+video_mode = SF::VideoMode.new 1200, 900
 window = SF::RenderWindow.new video_mode, "Visk's End of the World Adventure"
 # window.vertical_sync_enabled = true
 window.framerate_limit = 60
@@ -51,7 +51,7 @@ title_text.character_size = 48
 title_text.color = SF::Color::White
 # title_text.style = (SF::Text::Bold | SF::Text::Underlined)
 title_text.origin = title_text.local_bounds.center
-title_text.position = SF.vector2 400, 400
+title_text.position = SF.vector2 video_mode.width / 2, video_mode.height / 2 + 100
 
 clock = SF::Clock.new
 clock_text = SF::Text.new "", font, 20
@@ -59,12 +59,37 @@ clock_text = SF::Text.new "", font, 20
 fps_clock = SF::Clock.new
 fps_text = SF::Text.new "", font, 20
 fps_text.position = SF.vector2 0, 20
+# Debugging position
+#
+# position_text = SF::Text.new "", font, 20
+# position_text.position = SF.vector2 0, 40
 
-actors = [] of Actor
-# player = Player.new "Visk", SF.vector2(400, 300)
-player = Player.new SF.vector2(400, 300), SF.int_rect(128, 228, 16, 28)
+enemy_spawn_rate_increase_time = 20
+enemy_spawn_rate_time = 5
+next_spawn = 0
+spawn_x = false
+negative = false
+enemies = [] of Actor
+enemy_textures = [
+  SF.int_rect(128, 196, 16, 28), # Female Lizard texture
+  SF.int_rect(16, 272, 32, 32),  # Giant Plant texture
+  SF.int_rect(16, 320, 32, 32),  # Giant Ogre texture
+  SF.int_rect(16, 368, 32, 32),  # Giant Demon texture
+  SF.int_rect(368, 50, 16, 16),  # Tiny Demon texture
+  SF.int_rect(368, 80, 16, 16),  # Normal Skeleton texture
+  SF.int_rect(368, 302, 16, 18), # Normal Demon 1 texture
+  SF.int_rect(368, 206, 16, 18), # Normal Ogre 2 texture
+]
 
-player_movement = SF.vector2 0, 0
+projectiles = [] of Projectile
+projectile_delay = 500
+next_projectile_time = 0
+
+player = Player.new SF.vector2f(video_mode.width / 2, video_mode.height / 2), SF.int_rect(128, 228, 16, 28)
+
+player_movement = SF.vector2f 0, 0
+
+random = Random.new
 
 # Music doesn't want to play :c
 # This is more than likely a WSL issue... should work on desktop
@@ -75,6 +100,36 @@ while window.open?
   window.clear SF::Color::Black
 
   current_time = WorldClock.milliseconds
+  current_time_seconds = WorldClock.seconds
+
+  # Enemy spawn routine
+  #
+  if current_time_seconds >= next_spawn
+    ((current_time_seconds.to_i // enemy_spawn_rate_increase_time) + 1).times do
+      enemy_spawn_position = SF.vector2f 0, 0
+      spawn_x = random.rand(1..2) == 1
+      negative = random.rand(1..2) == 1
+
+      if spawn_x
+        enemy_spawn_position.y = (random.rand(video_mode.height + 200.0) - 100.0).to_f32
+        if negative
+          enemy_spawn_position.x -= 100
+        else
+          enemy_spawn_position.x += video_mode.width + 100
+        end
+      else
+        enemy_spawn_position.x = (random.rand(video_mode.width + 200.0) - 100.0).to_f32
+        if negative
+          enemy_spawn_position.y -= 100
+        else
+          enemy_spawn_position.y += video_mode.height + 100
+        end
+      end
+
+      enemies << Enemy.initialize_minion enemy_spawn_position, enemy_textures.sample
+    end
+    next_spawn += enemy_spawn_rate_time
+  end
 
   while event = window.poll_event
     # Closing window or pressing ESC exits the game
@@ -102,22 +157,41 @@ while window.open?
       elsif SF::Keyboard.key_pressed?(SF::Keyboard::Key::D)
         player_movement = Right
       end
+    elsif SF::Mouse.button_pressed? SF::Mouse::Left
+      if SF::Mouse.button_pressed? SF::Mouse::Left
+        if current_time > next_projectile_time
+          projectiles << Projectile.new player.position, SF::Mouse.get_position(window)
+          next_projectile_time = current_time + projectile_delay
+        end
+      end
     elsif !(SF::Keyboard.key_pressed?(SF::Keyboard::Key::W) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::A) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::S) || SF::Keyboard.key_pressed?(SF::Keyboard::Key::D))
-      player_movement = SF.vector2 0, 0
+      player_movement = SF.vector2f 0, 0
     end
   end
 
-  player.move player_movement
-
   clock_text.string = current_time.to_s
   fps_text.string = (1000 / fps_clock.restart.as_milliseconds).to_s
+  # Debugging position
+  #
+  # position_text.string = player.get_position.to_s
+
+  player.move player_movement
+  enemies.each { |enemy| enemy.move player.position }
+  projectiles.each { |projectile| projectile.move }
 
   player.update(current_time)
+  enemies.each { |enemy| enemy.update(current_time) }
 
   window.draw clock_text
   window.draw fps_text
-  window.draw title_text
+  window.draw title_text if current_time_seconds < 5
+  # Debugging position
+  #
+  # window.draw position_text
+
   window.draw player
+  enemies.each { |enemy| window.draw enemy }
+  prjectiles.each { |projectile| window.draw projectile }
 
   window.display
 end

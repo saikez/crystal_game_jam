@@ -70,7 +70,10 @@ class Actor
     animation_reset direction
     animation_facing direction
 
-    @sprite.move apply_speed(normalize_movement(direction))
+    movement = apply_speed(normalize_movement(direction))
+    @position += movement
+
+    @sprite.move movement
   end
 
   def normalize_movement(direction : SF::Vector2f)
