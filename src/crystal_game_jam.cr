@@ -22,14 +22,14 @@ class WorldClock
   end
 end
 
-Up         = SF.vector2 0, -10
-Down       = SF.vector2 0, 10
-Left       = SF.vector2 -10, 0
-Right      = SF.vector2 10, 0
-UpLeft     = SF.vector2 -5, -5
-UpRight    = SF.vector2 5, -5
-DownLeft   = SF.vector2 -5, 5
-DownRight  = SF.vector2 5, 5
+Up         = SF.vector2 0, -5
+Down       = SF.vector2 0, 5
+Left       = SF.vector2 -5, 0
+Right      = SF.vector2 5, 0
+UpLeft     = SF.vector2 -4, -4
+UpRight    = SF.vector2 4, -4
+DownLeft   = SF.vector2 -4, 4
+DownRight  = SF.vector2 4, 4
 Directions = [Left, Up, Right, Down, UpLeft, UpRight, DownLeft, DownRight]
 
 # music = SF::Music.from_file("src/assets/sounds/music/Tragique.ogg")
