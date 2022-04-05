@@ -1,27 +1,5 @@
 require "./game/helper"
 
-struct SF::Rect
-  def center
-    SF::Vector2.new left + width / 2, top + height / 2
-  end
-end
-
-class WorldClock
-  @@clock = SF::Clock.new
-
-  def self.elapsed_time
-    @@clock.elapsed_time
-  end
-
-  def self.milliseconds
-    @@clock.elapsed_time.as_milliseconds
-  end
-
-  def self.seconds
-    @@clock.elapsed_time.as_seconds
-  end
-end
-
 Up         = SF.vector2f 0, -1
 Down       = SF.vector2f 0, 1
 Left       = SF.vector2f -1, 0
@@ -128,7 +106,6 @@ while window.open?
          (event.is_a?(SF::Event::KeyPressed) && event.code.escape?)
        )
       window.close
-      # Movement is a little funky atm.. gotta fix later
     elsif event.is_a? SF::Event::KeyPressed
       if SF::Keyboard.key_pressed?(SF::Keyboard::Key::W)
         player_movement += Up if player_movement.y == 0
