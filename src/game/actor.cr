@@ -28,7 +28,7 @@ class Actor
     @next_anim_step_time = WorldClock.milliseconds + @anim_step_time
 
     @sprite = SF::Sprite.new @full_texture_file, @idle_animation.first
-    @sprite.local_bounds.center
+    @sprite.origin = @sprite.local_bounds.center
     @sprite.scale SF.vector2 2, 2
     @sprite.position = @position
   end
