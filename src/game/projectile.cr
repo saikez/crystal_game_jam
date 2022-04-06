@@ -10,8 +10,8 @@ class Projectile
   def initialize(@position : SF::Vector2f, @direction : SF::Vector2f)
     @sprite = SF::Sprite.new @texture
     @sprite.origin = @sprite.local_bounds.center
-    @sprite.scale SF.vector2 2, 2
     @sprite.position = @position
+    @sprite.rotation = -(Math.atan2(@direction.x, @direction.y) * 180 / Math::PI)
   end
 
   def draw(target, states)
@@ -39,5 +39,13 @@ class Projectile
 
   def apply_speed(direction)
     direction * @speed
+  end
+
+  def collides?(enemy : Enemy)
+    @sprite.global_bounds.intersects? enemy.global_bounds
+  end
+
+  def global_bounds
+    @sprite.global_bounds
   end
 end

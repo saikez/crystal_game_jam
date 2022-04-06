@@ -25,7 +25,6 @@ title_text.color = SF::Color::White
 title_text.origin = title_text.local_bounds.center
 title_text.position = SF.vector2 video_mode.width / 2, video_mode.height / 2 + 100
 
-clock = SF::Clock.new
 clock_text = SF::Text.new "", font, 20
 
 fps_clock = SF::Clock.new
@@ -35,25 +34,13 @@ fps_text.position = SF.vector2 0, 20
 enemy_spawn_rate_increase_time = 20
 enemy_spawn_rate_time = 5
 next_spawn = 0
-spawn_x = false
-negative = false
 enemies = [] of Actor
-enemy_textures = [
-  SF.int_rect(128, 196, 16, 28), # Female Lizard texture
-  SF.int_rect(16, 272, 32, 32),  # Giant Plant texture
-  SF.int_rect(16, 320, 32, 32),  # Giant Ogre texture
-  SF.int_rect(16, 368, 32, 32),  # Giant Demon texture
-  SF.int_rect(368, 50, 16, 16),  # Tiny Demon texture
-  SF.int_rect(368, 80, 16, 16),  # Normal Skeleton texture
-  SF.int_rect(368, 302, 16, 18), # Normal Demon 1 texture
-  SF.int_rect(368, 206, 16, 18), # Normal Ogre 2 texture
-]
 
 projectiles = [] of Projectile
 projectile_delay = 500
 next_projectile_time = 0
 
-player = Player.new SF.vector2f(video_mode.width / 2, video_mode.height / 2), SF.int_rect(128, 228, 16, 28)
+player = Player.new SF.vector2f(video_mode.width / 2, video_mode.height / 2)
 
 player_movement = SF.vector2f 0, 0
 
@@ -77,6 +64,7 @@ while window.open?
       enemy_spawn_position = SF.vector2f 0, 0
       spawn_x = random.rand(1..2) == 1
       negative = random.rand(1..2) == 1
+      enemy_type = random.rand(1..5)
 
       if spawn_x
         enemy_spawn_position.y = (random.rand(video_mode.height + 200.0) - 100.0).to_f32
@@ -94,7 +82,14 @@ while window.open?
         end
       end
 
-      enemies << Enemy.initialize_minion enemy_spawn_position, enemy_textures.sample
+      case enemy_type
+      when 1
+        enemies << TinyEnemy.new enemy_spawn_position
+      when 5
+        enemies << BigEnemy.new enemy_spawn_position
+      else
+        enemies << Enemy.new enemy_spawn_position
+      end
     end
     next_spawn += enemy_spawn_rate_time
   end
@@ -137,9 +132,23 @@ while window.open?
   clock_text.string = current_time.to_s
   fps_text.string = (1000 / fps_clock.restart.as_milliseconds).to_s
 
-  player.move player_movement
-  enemies.each { |enemy| enemy.move player.position }
-  projectiles.each { |projectile| projectile.move }
+  unless player.dead?
+    player.move player_movement
+    enemies.each { |enemy| enemy.move player.position }
+    projectiles.each do |projectile|
+      projectile.move
+
+      if (enemy = enemies.find &.collides?(projectile))
+        enemy.hit
+        enemies.delete enemy if enemy.dead?
+        projectiles.delete projectile
+      end
+    end
+
+    unless player.hit_immune?
+      player.hit if (enemy = enemies.find &.collides?(player))
+    end
+  end
 
   player.update(current_time)
   enemies.each { |enemy| enemy.update(current_time) }

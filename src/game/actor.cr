@@ -15,10 +15,17 @@ class Actor
   @anim_index = 0
 
   @speed = 5
+  @hp = 3
   @moving = false
   @facing_left = false
 
-  def initialize(@position : SF::Vector2f, texture_rect : SF::IntRect)
+  @textures = [
+    SF.int_rect(128, 202, 16, 22), # Female Lizard
+  ]
+
+  def initialize(@position : SF::Vector2f)
+    texture_rect = @textures.sample
+
     (0..3).each do |i|
       @idle_animation << animation_rect(texture_rect, i)
     end
@@ -59,7 +66,9 @@ class Actor
   end
 
   def animation_step
-    if @moving
+    if dead?
+      @hit_animation
+    elsif @moving
       @run_animation[@anim_index]
     else
       @idle_animation[@anim_index]
@@ -108,5 +117,21 @@ class Actor
       @facing_left = !@facing_left
       @sprite.scale -1, 1
     end
+  end
+
+  def collides?(other)
+    @sprite.global_bounds.intersects? other.global_bounds
+  end
+
+  def global_bounds
+    @sprite.global_bounds
+  end
+
+  def dead?
+    @hp <= 0
+  end
+
+  def hit
+    @hp -= 1
   end
 end
