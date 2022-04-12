@@ -6,10 +6,9 @@ Left       = SF.vector2f -1, 0
 Right      = SF.vector2f 1, 0
 Directions = [Left, Up, Right, Down]
 
-# music = SF::Music.from_file("src/assets/sounds/music/Tragique.ogg")
-
-# music.volume = 50 # reduce the volume
-# music.loop = true # make it loop
+music = SF::Music.from_file("src/assets/sounds/music/Tragique.wav")
+music.volume = 50 # reduce the volume
+music.loop = true # make it loop
 
 video_mode = SF::VideoMode.new 1200, 900
 window = SF::RenderWindow.new video_mode, "Visk's End of the World Adventure"
@@ -46,9 +45,8 @@ player_movement = SF.vector2f 0, 0
 
 random = Random.new
 
-# Music doesn't want to play :c
-# This is more than likely a WSL issue... should work on desktop
-# music.play
+# Music does not play with WSL.. yet!
+music.play
 
 # Start Game Loop
 while window.open?
