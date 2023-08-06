@@ -127,6 +127,10 @@ class Actor
     @sprite.global_bounds
   end
 
+  def alive?
+    !dead?
+  end
+
   def dead?
     @hp <= 0
   end

@@ -6,7 +6,14 @@ Left       = SF.vector2f -1, 0
 Right      = SF.vector2f 1, 0
 Directions = [Left, Up, Right, Down]
 
-music = SF::Music.from_file("src/assets/sounds/music/Tragique.wav")
+music_selection = [
+  "src/assets/sounds/music/4_Battle_1_Master.ogg",
+  "src/assets/sounds/music/8_Battle_2_Master.ogg",
+  "src/assets/sounds/music/9_Boss_1_Master.ogg",
+  "src/assets/sounds/music/Tragique.ogg",
+]
+
+music = SF::Music.from_file(music_selection.sample)
 music.volume = 50 # reduce the volume
 music.loop = true # make it loop
 
@@ -57,7 +64,7 @@ while window.open?
 
   # Enemy spawn routine
   #
-  if current_time_seconds >= next_spawn
+  if current_time_seconds >= next_spawn && player.alive?
     ((current_time_seconds.to_i // enemy_spawn_rate_increase_time) + 1).times do
       enemy_spawn_position = SF.vector2f 0, 0
       spawn_x = random.rand(1..2) == 1
